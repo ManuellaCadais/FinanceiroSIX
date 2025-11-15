@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==========================================================
-# PALETA SIX (completa)
+# PALETA SIX
 # ==========================================================
 PALETA_SIX = [
     "#F7DF0E", "#FFF48B", "#FFF9C4", "#FFFDE7",
@@ -32,7 +32,7 @@ TEXT_COLOR = "#ffffff"
 ACCENT_COLOR = "#FFD700"
 
 # ==========================================================
-# FUNÇÃO: BACKGROUND
+# FUNÇÃO PARA BACKGROUND
 # ==========================================================
 def get_image_base64():
     try:
@@ -72,16 +72,6 @@ def load_css():
             text-shadow: 0 0 15px rgba(247,223,14,0.3);
         }}
 
-        .stTabs [data-baseweb="tab-list"] button {{
-            color: white !important;
-            font-weight: bold !important;
-        }}
-
-        .stTabs [aria-selected="true"] {{
-            color: {PRIMARY_COLOR} !important;
-            border-bottom: 3px solid {PRIMARY_COLOR} !important;
-        }}
-
         .metric-card {{
             background: rgba(0,0,0,0.55);
             border: 2px solid {PRIMARY_COLOR};
@@ -103,10 +93,10 @@ def load_css():
 
         .chart-container {{
             background: rgba(0,0,0,0.50);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid {PRIMARY_COLOR};
-            margin-top: 10px;
+            margin-top: 15px;
         }}
 
     </style>
@@ -156,10 +146,9 @@ unidade_selecionada = st.sidebar.multiselect(
     default=unidades
 )
 
-# ---- Filtro de Grandes Números ----
 df_grandes_filtrado = df_grandes[df_grandes["Unidade"].isin(unidade_selecionada)]
 
-# ---- Meses NOMINAIS ----
+# ---- Meses ----
 df_financeiro["Mês"] = pd.to_datetime(df_financeiro["Mês"])
 df_financeiro["Mes_Nome"] = df_financeiro["Mês"].dt.month.map({
     8: "Agosto",
@@ -175,7 +164,6 @@ meses_selecionados = st.sidebar.multiselect(
     default=meses_unicos
 )
 
-# ---- Filtro Financeiro ----
 df_financeiro_filtrado = df_financeiro[
     (df_financeiro["Unidade"].isin(unidade_selecionada)) &
     (df_financeiro["Mes_Nome"].isin(meses_selecionados))
@@ -186,138 +174,162 @@ df_financeiro_filtrado = df_financeiro[
 # ==========================================================
 tab1, tab2, tab3 = st.tabs(["📊 Visão Geral", "💰 Financeiro", "👥 Clientes"])
 
+
 # ==========================================================
 # TAB 1 – VISÃO GERAL
 # ==========================================================
 with tab1:
     st.markdown("## Visão Geral das Unidades")
 
-    if df_grandes_filtrado.empty:
-        st.warning("Nenhum dado encontrado.")
-    else:
-        col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
 
-        with col1:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Ativos</div>
-                <div class='metric-value'>{df_grandes_filtrado['Ativos'].sum():,}</div>
-            </div>""", unsafe_allow_html=True)
+    with col1:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Ativos</div><div class='metric-value'>{df_grandes_filtrado['Ativos'].sum():,}</div></div>", unsafe_allow_html=True)
 
-        with col2:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Adimplentes</div>
-                <div class='metric-value'>{df_grandes_filtrado['Adimplentes'].sum():,}</div>
-            </div>""", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Adimplentes</div><div class='metric-value'>{df_grandes_filtrado['Adimplentes'].sum():,}</div></div>", unsafe_allow_html=True)
 
-        with col3:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Inadimplentes</div>
-                <div class='metric-value'>{df_grandes_filtrado['Inadimplentes'].sum():,}</div>
-            </div>""", unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Inadimplentes</div><div class='metric-value'>{df_grandes_filtrado['Inadimplentes'].sum():,}</div></div>", unsafe_allow_html=True)
 
-        with col4:
-            churn = df_grandes_filtrado["Evasao (churn)"].mean() * 100
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Churn</div>
-                <div class='metric-value'>{churn:.2f}%</div>
-            </div>""", unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Personal</div><div class='metric-value'>{df_grandes_filtrado['Personal'].sum():,}</div></div>", unsafe_allow_html=True)
+
+    with col5:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>VIP</div><div class='metric-value'>{df_grandes_filtrado['VIP'].sum():,}</div></div>", unsafe_allow_html=True)
+
+    with col6:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Suspensos</div><div class='metric-value'>{df_grandes_filtrado['Suspensos'].sum():,}</div></div>", unsafe_allow_html=True)
+
 
 # ==========================================================
 # TAB 2 – FINANCEIRO
 # ==========================================================
 with tab2:
-    st.markdown("## Análise Financeira")
+    st.markdown("## Indicadores Financeiros")
 
-    if df_financeiro_filtrado.empty:
-        st.warning("Nenhum dado disponível.")
-    else:
+    col1, col2, col3, col4 = st.columns(4)
 
-        col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Faturamento Total</div><div class='metric-value'>R$ {df_financeiro_filtrado['Faturamento'].sum():,.0f}</div></div>", unsafe_allow_html=True)
 
-        with col1:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Faturamento Total</div>
-                <div class='metric-value'>R$ {df_financeiro_filtrado['Faturamento'].sum():,.0f}</div>
-            </div>""", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Lucro Operacional</div><div class='metric-value'>R$ {df_financeiro_filtrado['Lucro Operavional'].sum():,.0f}</div></div>", unsafe_allow_html=True)
 
-        with col2:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Lucro Operacional</div>
-                <div class='metric-value'>R$ {df_financeiro_filtrado['Lucro Operavional'].sum():,.0f}</div>
-            </div>""", unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Reinvestimentos</div><div class='metric-value'>R$ {df_financeiro_filtrado['Reinvestimentos'].sum():,.0f}</div></div>", unsafe_allow_html=True)
 
-        with col3:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Reinvestimentos</div>
-                <div class='metric-value'>R$ {df_financeiro_filtrado['Reinvestimentos'].sum():,.0f}</div>
-            </div>""", unsafe_allow_html=True)
-
-        with col4:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div class='metric-label'>Retirada de Sócios</div>
-                <div class='metric-value'>R$ {df_financeiro_filtrado['Retirada de Sócios'].sum():,.0f}</div>
-            </div>""", unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"<div class='metric-card'><div class='metric-label'>Retirada de Sócios</div><div class='metric-value'>R$ {df_financeiro_filtrado['Retirada de Sócios'].sum():,.0f}</div></div>", unsafe_allow_html=True)
 
 
-        # ===== GRÁFICO: FATURAMENTO =====
-        df_ord = df_financeiro_filtrado.sort_values("Mês")
+    # -------- LUCRO MENSAL --------
+    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
 
-        st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-        fig = px.line(
-            df_ord,
-            x="Mes_Nome",
-            y="Faturamento",
-            color="Unidade",
-            markers=True,
-            title="Evolução do Faturamento",
-            color_discrete_sequence=PALETA_SIX
-        )
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0.3)",
-            font_color=TEXT_COLOR,
-            title_font_color=PRIMARY_COLOR
-        )
-        st.plotly_chart(fig, width="stretch")
-        st.markdown("</div>", unsafe_allow_html=True)
+    df_lucro = df_financeiro_filtrado.groupby("Mes_Nome")["Lucro Operavional"].sum().reset_index()
+    df_lucro = df_lucro.sort_values(by=["Mes_Nome"], key=lambda x: x.map({"Agosto":1,"Setembro":2,"Outubro":3}))
+
+    fig_lucro = px.bar(
+        df_lucro,
+        x="Lucro Operavional",
+        y="Mes_Nome",
+        orientation="h",
+        title="Lucro Mensal",
+        color="Mes_Nome",
+        color_discrete_sequence=PALETA_SIX
+    )
+    fig_lucro.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0.3)",
+        font_color=TEXT_COLOR
+    )
+
+    st.plotly_chart(fig_lucro, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # -------- FATURAMENTO AGRUPADO --------
+    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+
+    df_fat = df_financeiro_filtrado.groupby(["Mes_Nome", "Unidade"])["Faturamento"].sum().reset_index()
+    df_fat = df_fat.sort_values(by=["Mes_Nome"], key=lambda x: x.map({"Agosto":1,"Setembro":2,"Outubro":3}))
+
+    fig_fat = px.bar(
+        df_fat,
+        x="Mes_Nome",
+        y="Faturamento",
+        color="Unidade",
+        barmode="group",
+        title="Faturamento por Unidade",
+        color_discrete_sequence=PALETA_SIX
+    )
+    fig_fat.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0.3)",
+        font_color=TEXT_COLOR
+    )
+
+    st.plotly_chart(fig_fat, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ==========================================================
 # TAB 3 – CLIENTES
 # ==========================================================
 with tab3:
-    st.markdown("## Análise de Clientes")
+    st.markdown("## Comparativo de Planos")
 
-    df = df_grandes_filtrado.copy()
-    if df.empty:
-        st.warning("Nenhuma unidade selecionada.")
-    else:
-        df["Taxa"] = (df["Inadimplentes"] / df["Ativos"] * 100)
+    dfp = df_grandes_filtrado.copy()
 
-        st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-        fig = px.bar(
-            df,
-            x="Unidade",
-            y="Taxa",
-            title="Taxa de Inadimplência (%)",
-            color="Unidade",
-            color_discrete_sequence=PALETA_SIX
-        )
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0.3)",
-            font_color=TEXT_COLOR,
-            title_font_color=PRIMARY_COLOR
-        )
-        st.plotly_chart(fig, width="stretch")
-        st.markdown("</div>", unsafe_allow_html=True)
+    # ---------- Gráfico comparativo ----------
+    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+
+    df_long = dfp.melt(
+        id_vars="Unidade",
+        value_vars=["Ativos", "Adimplentes", "Inadimplentes", "Personal", "VIP", "Suspensos"],
+        var_name="Categoria",
+        value_name="Quantidade"
+    )
+
+    fig_comp = px.bar(
+        df_long,
+        x="Categoria",
+        y="Quantidade",
+        color="Categoria",
+        barmode="group",
+        title="Comparativo de Planos",
+        color_discrete_sequence=PALETA_SIX
+    )
+    fig_comp.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0.3)",
+        font_color=TEXT_COLOR
+    )
+
+    st.plotly_chart(fig_comp, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # ---------- Pizza Adimplentes vs Inadimplentes ----------
+    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+
+    total_ad = dfp["Adimplentes"].sum()
+    total_inad = dfp["Inadimplentes"].sum()
+
+    fig_pie = px.pie(
+        names=["Adimplentes", "Inadimplentes"],
+        values=[total_ad, total_inad],
+        color=["Adimplentes", "Inadimplentes"],
+        title="Planos Ativos",
+        color_discrete_sequence=["#3C52FF", "#F70ECC"]
+    )
+    fig_pie.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        font_color=TEXT_COLOR
+    )
+
+    st.plotly_chart(fig_pie, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ==========================================================
 # FOOTER
